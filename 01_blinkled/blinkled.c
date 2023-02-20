@@ -15,6 +15,34 @@
 
 #define GPIOC_MODER (volatile uint32_t*)(uintptr_t)0x48000800U // GPIO port mode register
 #define GPIOC_TYPER (volatile uint32_t*)(uintptr_t)0x48000804U // GPIO port output type register
+#define GPIOС_ODR   (volatile uint32_t*)(uintptr_t)0x48000814U // GPIO port output data register
+
+//---------------------
+// Modifying Registers
+//---------------------
+
+#define GPIOC_REG_ADD_VALUE(REG, BIT, VALUE)  (*REG |= VALUE << (BIT))               // Adds VALUE in BIT of REG           
+#define GPIOC_REG_SET_ZERO(REG, BIT)          (*REG &= ~(0b1U << (BIT)))             // Sets 0 in BIT of REG
+#define GPIOC_REG_SET_ONE(REG, BIT)           (GPIOC_REG_ADD_VALUE(REG, BIT, 0b1U))  // Sets 1 in BIT of REG
+
+//-----------
+// GPIO LEDS
+//-----------
+#define LED_3_GREEN 9U
+#define LED_4_BLUE  8U 
+
+//---------------------
+// GPIO Initialization
+//---------------------
+    // Modes:
+        #define INPUT_M 0b00U
+        #define GEN_PURP_OUT_M 0b01U
+        #define ALT_FUNC_M 0b10U
+        #define ANALOG_M 0b11U
+    // Output types:
+        #define PUSH_PULL_T 0b0U
+        #define OPEN_DRAIN_T 0b1U
+
 
 //------
 // Main
@@ -58,13 +86,19 @@ void board_clocking_init()
 void board_gpio_init()
 {
     // (1) Enable GPIOC clocking:
-    *REG_RCC_AHBENR |= 0x80000U;
+    GPIOC_REG_SET_ONE(REG_RCC_AHBENR, 19);
 
     // (2) Configure PC8 mode:
-    *GPIOC_MODER |= 0b01U << (2*8U);
+    GPIOC_REG_ADD_VALUE(GPIOC_MODER, 2*LED_4_BLUE, GEN_PURP_OUT_M);
 
     // (3) Configure PC8 type:
-    *GPIOC_TYPER |= 0b0U << 8U;
+    GPIOC_REG_ADD_VALUE(GPIOC_TYPER, 2*LED_4_BLUE, PUSH_PULL_T);
+
+    // (4) Configure PC9 mode:
+    GPIOC_REG_ADD_VALUE(GPIOC_MODER, 2*LED_3_GREEN, GEN_PURP_OUT_M);
+
+    // (5) Configure PC9 type:
+    GPIOC_REG_ADD_VALUE(GPIOC_TYPER, 2*LED_3_GREEN, PUSH_PULL_T);
 }
 
 void totally_accurate_quantum_femtosecond_precise_super_delay_3000_1000ms()
@@ -86,12 +120,18 @@ int main()
 
     while (1)
     {
-        *(volatile uint32_t*)(uintptr_t)0x48000814U |=  0x100U;
+        GPIOC_REG_SET_ONE(GPIOС_ODR, LED_4_BLUE);
 
         totally_accurate_quantum_femtosecond_precise_super_delay_3000_1000ms();
 
-        *(volatile uint32_t*)(uintptr_t)0x48000814U &= ~0x100U;
+        GPIOC_REG_SET_ZERO(GPIOС_ODR, LED_4_BLUE);
 
         totally_accurate_quantum_femtosecond_precise_super_delay_3000_1000ms();
+
+        GPIOC_REG_SET_ONE(GPIOС_ODR, LED_3_GREEN);
+
+        totally_accurate_quantum_femtosecond_precise_super_delay_3000_1000ms();
+
+        GPIOC_REG_SET_ZERO(GPIOС_ODR, LED_3_GREEN);
     }
 }
