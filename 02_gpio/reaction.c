@@ -1,4 +1,10 @@
+#include <stdint.h>
+#include <stdbool.h>
 #include "reg_config.h"
+
+#define P1 1
+#define P2 2
+#define NO_ONE 3
 
 //-------------------
 // 7-segment display
@@ -21,7 +27,9 @@
         static const uint32_t PINS_USED = A|B|C|D|E|F|G|DP|POS0|POS1|POS2|POS3;
 
     // Digit composition:
-        static const uint32_t DIGITS[10] =
+        #define P 10
+
+        static const uint32_t DIGITS[11] =
         {
             A|B|C|D|E|F,   // 0
             B|C,           // 1
@@ -32,7 +40,8 @@
             A|C|D|E|F|G,   // 6
             A|B|C,         // 7
             A|B|C|D|E|F|G, // 8
-            A|B|C|D|F|G    // 9
+            A|B|C|D|F|G,   // 9
+            A|B|E|F|G      // P
         };
 
         static const uint32_t POSITIONS[4] =
@@ -50,14 +59,9 @@
             uint16_t number;
         };
 
-        void SEG7_set_number_quarter(struct Seg7Display* seg7, unsigned tick)
+        void SEG7_set_number_pos(struct Seg7Display* seg7, unsigned pos)
         {
-            uint32_t divisors[4] = {1, 10, 100, 1000};
-
-            unsigned quarter = tick % 4;
-            unsigned divisor = divisors[quarter];
-
-            seg7->display = DIGITS[(seg7->number / divisor) % 10] | POSITIONS[quarter];
+            seg7->display = DIGITS[seg7->number] | POSITIONS[pos];
         }
 
     // Write changes to microcontroller:
@@ -101,7 +105,6 @@
             REG_ADD_VALUE(REG_RCC_CFGR, SW, PLL_SYS_CLK);
             while ((*REG_RCC_CFGR & (0b11U << SWS)) != (PLL_SYS_CLK << SWS));
             
-
         // (8) Set APB frequency to 24 MHz:
             REG_ADD_VALUE(REG_RCC_CFGR, PPRE, HCLK_NOT_DIV);
     }
@@ -120,26 +123,120 @@
 //--------------------
     void board_gpio_init()
     {
-        // (1) Configure PA1-PA12 as output:
-        REG_SET_ONE(REG_RCC_AHBENR, IOPA_EN);
+        // Configure Port A:
+            REG_SET_ONE(REG_RCC_AHBENR, IOPA_EN);
 
-        // Configure mode register:
-            // Modes for the first 12 pins 
-                for (int i = 1; i <= 12; i++) {
-                    REG_ADD_VALUE(GPIOA_MODER, 2*i, GEN_PURP_OUT_M);
-                }
-            // Mode for the 15 pins
-                REG_ADD_VALUE(GPIOA_MODER, 2*15, GEN_PURP_OUT_M);
+            // Configure mode register:
+                // Modes for the first 12 pins 
+                    for (int i = 1; i <= 12; i++) {
+                        REG_ADD_VALUE(GPIOA_MODER, 2*i, GEN_PURP_OUT_M);
+                    }
+                // Mode for the 15 pins
+                    REG_ADD_VALUE(GPIOA_MODER, 2*15, GEN_PURP_OUT_M);
 
-        // Configure type register:
-            REG_SET_ZERO_ALL(GPIOA_OTYPER);
+            // Configure type register:
+                REG_SET_ZERO_ALL(GPIOA_OTYPER);
 
-        // (2) Configure PA0 as button:
-            REG_ADD_VALUE(GPIOA_MODER, 0, INPUT_M);
+            // Configure PA0 as button:
+                REG_ADD_VALUE(GPIOA_MODER, 0, INPUT_M);
+                REG_ADD_VALUE(GPIOA_PUPDR, 0, PULL_DOWN);
+        
+        // Configure Port C:
+            REG_SET_ONE(REG_RCC_AHBENR, IOPC_EN);
 
-        // Configure PA0 as pull-down pin:
-            REG_ADD_VALUE(GPIOA_PUPDR, 0, PULL_DOWN);
+            // Configure PC8:
+                REG_ADD_VALUE(GPIOC_MODER, 2*LED_4_BLUE, GEN_PURP_OUT_M);
+                REG_ADD_VALUE(GPIOC_OTYPER, 2*LED_4_BLUE, PUSH_PULL_T);
+
+            // Configure PC9:
+                REG_ADD_VALUE(GPIOC_MODER, 2*LED_3_GREEN, GEN_PURP_OUT_M);
+                REG_ADD_VALUE(GPIOC_OTYPER, 2*LED_3_GREEN, PUSH_PULL_T);
+
+            // Configure PC5 as button:
+                REG_ADD_VALUE(GPIOC_MODER, 2*5, INPUT_M);
+                REG_ADD_VALUE(GPIOС_PUPDR, 2*5, PULL_DOWN);
+            
+            // Configure PC5 as button:
+                REG_ADD_VALUE(GPIOC_MODER, 2*4, INPUT_M);
+                REG_ADD_VALUE(GPIOС_PUPDR, 2*4, PULL_DOWN);
+            
     }
+
+void end(int winner) {
+    struct Seg7Display p = 
+    {
+        .number = P
+    };
+
+    int tick = 0;
+    
+    if(winner == 1) {
+        struct Seg7Display num_1 =
+        {
+            .number = 1
+        };
+
+        while(1) {
+            SEG7_set_number_pos(&num_1, 2);
+            SEG7_push_display_state_to_mc(&num_1);
+
+            SEG7_set_number_pos(&p, 3);
+            SEG7_push_display_state_to_mc(&p);
+
+            if (tick%20000 == 0) {
+                REG_SET_ONE(GPIOС_ODR, LED_3_GREEN);
+            }
+
+            if (tick%20000 == 10000) {
+                REG_SET_ZERO(GPIOС_ODR, LED_3_GREEN);
+            }
+            if (tick%100000 == 0) {
+                REG_SET_ONE(GPIOС_ODR, LED_4_BLUE);
+            }
+
+            if (tick%100000 == 50000) {
+                REG_SET_ZERO(GPIOС_ODR, LED_4_BLUE);
+            }
+
+            tick++;
+        }
+    }
+
+    else {
+        struct Seg7Display num_2 =
+        {
+            .number = 2
+        };
+        
+        while(1) {
+            SEG7_set_number_pos(&num_2, 0);
+            SEG7_push_display_state_to_mc(&num_2);
+
+            SEG7_set_number_pos(&p, 1);
+            SEG7_push_display_state_to_mc(&p);
+
+            if (tick%20000 == 0) {
+                REG_SET_ONE(GPIOС_ODR, LED_4_BLUE);
+            }
+
+            if (tick%20000 == 10000) {
+                REG_SET_ZERO(GPIOС_ODR, LED_4_BLUE);
+            }
+            if (tick%100000 == 0) {
+                REG_SET_ONE(GPIOС_ODR, LED_3_GREEN);
+            }
+
+            if (tick%100000 == 50000) {
+                REG_SET_ZERO(GPIOС_ODR, LED_3_GREEN);
+            }
+            
+            tick++;
+        }
+    }
+    
+
+}
+    
 
 //------
 // Main
@@ -151,52 +248,75 @@
         board_gpio_init();
 
         // Init display rendering:
-        struct Seg7Display seg7 =
+        struct Seg7Display p1 =
         {
             .number = 0
         };
 
-        uint32_t tick = 0;
-        bool button_was_pressed = 0U;
-        uint32_t saturation = 0U;
+        struct Seg7Display p2 =
+        {
+            .number = 0
+        };
+
+        uint32_t saturation1 = 0U;
+        uint32_t saturation2 = 0U;
+
+        int ownership = NO_ONE; 
 
         while (1)
         {
-            // Update button state:
-            bool active = *GPIOA_IDR & (1U << 0U);
+            bool active1 = *GPIOC_IDR & (1U << 4U);
+            bool active2 = *GPIOC_IDR & (1U << 5U);
 
-            if (active)
+            if (active1)
             {
-                if (saturation < 5U)
+                if (saturation1 < 5U)
                 {
-                    saturation += 1U;
+                    saturation1 += 1U;
                 }
                 else
                 {
-                    button_was_pressed = 1U;
+                    p1.number = 1;
+                    if(ownership == P2) {
+                        end(P2);
+                    }
+                    else ownership = P1;
                 }
             }
             else
             {
-                saturation = 0U;
+                saturation1 = 0U;
+                ownership = NO_ONE;
             }
 
-            // Update display state:
-            if (!button_was_pressed && (tick % 10U) == 0U)
+            if (active2)
             {
-                if (seg7.number < 9999U)
+                if (saturation2 < 5U)
                 {
-                    seg7.number = seg7.number + 1U;
+                    saturation2 += 1U;
+                }
+                else
+                {
+                    p2.number = 1;
+                    if(ownership == P1) {
+                        end(P1);
+                    }
+                    else ownership = P2;
                 }
             }
+            else
+            {
+                saturation2 = 0U;
+                ownership = NO_ONE;
+            }
 
-            // Render display state:
-            SEG7_set_number_quarter(&seg7, tick);
+            SEG7_set_number_pos(&p1, 3);
+            SEG7_push_display_state_to_mc(&p1);
 
-            SEG7_push_display_state_to_mc(&seg7);
+            SEG7_set_number_pos(&p2, 0);
+            SEG7_push_display_state_to_mc(&p2);
 
-            // Adjust ticks every ms:
-            to_get_more_accuracy_pay_2202_2013_2410_3805_1ms();
-            tick += 1;
+            p1.number = 0;
+            p2.number = 0;
         }
     }

@@ -1,6 +1,3 @@
-#include <stdint.h>
-#include <stdbool.h>
-
 //---------------------
 // Modifying Registers
 //---------------------
@@ -143,6 +140,13 @@
 
     #define GPIOC_MODER  (volatile uint32_t*)(uintptr_t)0x48000800U // GPIO port mode register
     #define GPIOC_OTYPER (volatile uint32_t*)(uintptr_t)0x48000804U // GPIO port output type register
+    #define GPIOС_PUPDR  (volatile uint32_t*)(uintptr_t)0x4800080CU // GPIO port pull-up/pull-down register
+    #define GPIOC_IDR    (volatile uint32_t*)(uintptr_t)0x48000810U // GPIO port input  data register
+    #define GPIOС_ODR    (volatile uint32_t*)(uintptr_t)0x48000814U // GPIO port output data register
+
+    // GPIOC_ODR bits:
+        #define LED_3_GREEN 9U
+        #define LED_4_BLUE  8U 
 
     // GPIO Initialization:
         // Modes:

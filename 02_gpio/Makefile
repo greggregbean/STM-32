@@ -36,6 +36,8 @@ SOURCES = \
 	entry.S \
 	reaction.c
 
+HEADER = ./reg_config.h
+
 OBJECTS_HALFWAY_DONE = $(SOURCES:%.c=build/%.o)
 OBJECTS              = $(OBJECTS_HALFWAY_DONE:%.S=build/%.o)
 
@@ -54,7 +56,7 @@ $(EXECUTABLE_FLASH): $(OBJECTS)
 $(BINARY_FLASH): $(EXECUTABLE_FLASH)
 	arm-none-eabi-objcopy -O binary $< $@
 
-build/%.o: %.c
+build/%.o: %.c $(HEADER)
 	@mkdir -p build
 	$(CC) $(CFLAGS) -o $@ -c $<
 
