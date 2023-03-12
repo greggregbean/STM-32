@@ -21,9 +21,9 @@
 // Modifying Registers
 //---------------------
 
-#define GPIOC_REG_ADD_VALUE(REG, BIT, VALUE)  (*REG |= VALUE << (BIT))               // Adds VALUE in BIT of REG           
-#define GPIOC_REG_SET_ZERO(REG, BIT)          (*REG &= ~(0b1U << (BIT)))             // Sets 0 in BIT of REG
-#define GPIOC_REG_SET_ONE(REG, BIT)           (GPIOC_REG_ADD_VALUE(REG, BIT, 0b1U))  // Sets 1 in BIT of REG
+#define GPIOC_REG_ADD_VALUE(REG, BIT, VALUE)  (*(REG) |= VALUE << (BIT))               // Adds VALUE in BIT of REG           
+#define GPIOC_REG_SET_ZERO(REG, BIT)          (*(REG) &= ~(0b1U << (BIT)))             // Sets 0 in BIT of REG
+#define GPIOC_REG_SET_ONE(REG, BIT)           (GPIOC_REG_ADD_VALUE(REG, BIT, 0b1U))    // Sets 1 in BIT of REG
 
 //-----------
 // GPIO LEDS
