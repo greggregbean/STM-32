@@ -73,82 +73,12 @@
 
         #define PPRE 8U // PCLK prescaler
         //------------------------------------------------------
-            #define SYS_CLK_BY_256  0b1110U  // SYSCLK divided by 256 
-            #define SYS_CLK_BY_512  0b1111U  // SYSCLK divided by 512 
-        //------------------------------------------------------------
-
-        #define SWS 2U // System clock switch status
-        #define SW  0U // System clock switch
-        //--------------------------------------------------------------------------------------
-            #define HSI_SYS_CLK   0b00U // HSI selected/used as system clock
-            #define HSE_SYS_CLK   0b01U // HSE selected/used as system clock
-            #define PLL_SYS_CLK   0b10U // PLL selected/used as system clock
-            #define HSI48_SYS_CLK 0b11U // HSI48 selected/used as system clock (when available)
-        //--------------------------------------------------------------------------------------
-
-    // RCC_AHBNER bits:
-        #define IOPA_EN 17U
-        #define IOPB_EN 18U
-        #define IOPC_EN 19U
-        #define IOPD_EN 20U
-        #define IOPE_EN 21U
-        #define IOPF_EN 22U
-    
-    
-    // RCC_CFGR2 bits:
-        #define PREDIV 0U // PREDIV division factor
-        //---------------------------------------------------------------
-            #define PREDIV_NOT_DIV     0b0000U // PREDIV input clock not divided
-            #define PREDIV_BY_2        0b0001U // PREDIV input clock divided by 2
-            #define PREDIV_BY_3        0b0010U // PREDIV input clock divided by 3
-            #define PREDIV_BY_4        0b0011U // PREDIV input clock divided by 4
-            #define PREDIV_BY_5        0b0100U // PREDIV input clock divided by 5
-            #define PREDIV_BY_6        0b0101U // PREDIV input clock divided by 6
-            #define PREDIV_BY_7        0b0110U // PREDIV input clock divided by 7
-            #define PREDIV_BY_8        0b0111U // PREDIV input clock divided by 8
-            #define PREDIV_BY_9        0b1000U // PREDIV input clock divided by 9
-            #define PREDIV_BY_10       0b1001U // PREDIV input clock divided by 10
-            #define PREDIV_BY_11       0b1010U // PREDIV input clock divided by 11
-            #define PREDIV_BY_12       0b1011U // PREDIV input clock divided by 12
-            #define PREDIV_BY_13       0b1100U // PREDIV input clock divided by 13
-            #define PREDIV_BY_14       0b1101U // PREDIV input clock divided by 14
-            #define PREDIV_BY_15       0b1110U // PREDIV input clock divided by 15
-            #define PREDIV_BY_16       0b1111U // PREDIV input clock divided by 16
-        //---------------------------------------------------------------
-
-//----------------
-// GPIO Registers
-//----------------
-    #define GPIOA_MODER  (volatile uint32_t*)(uintptr_t)0x48000000U // GPIO port mode register
-    #define GPIOA_OTYPER (volatile uint32_t*)(uintptr_t)0x48000004U // GPIO port output type register
-    #define GPIOA_PUPDR  (volatile uint32_t*)(uintptr_t)0x4800000CU // GPIO port pull-up/pull-down register
-    #define GPIOA_IDR    (volatile uint32_t*)(uintptr_t)0x48000010U // GPIO port input  data register
-    #define GPIOA_ODR    (volatile uint32_t*)(uintptr_t)0x48000014U // GPIO port output data register
-
-    #define GPIOC_MODER  (volatile uint32_t*)(uintptr_t)0x48000800U // GPIO port mode register
-    #define GPIOC_OTYPER (volatile uint32_t*)(uintptr_t)0x48000804U // GPIO port output type register
-
-    // GPIO Initialization:
-        // Modes:
-            #define INPUT_M        0b00U
-            #define GEN_PURP_OUT_M 0b01U
-            #define ALT_FUNC_M     0b10U
-            #define ANALOG_M       0b11U
-        // Output types:
-            #define PUSH_PULL_T    0b0U
-            #define OPEN_DRAIN_T   0b1U
-
-    // GPIO pull-up/pull-down:
-        #define NO_PULL_UP_NO_PULL_DOWN 0b00U
-        #define PULL_UP                 0b01U
-        #define PULL_DOWN               0b10U
-        #define RESERVED                0b11U 
-         #define HCLK_NOT_DIV 0U << 2U // HCLK not divided
+            #define HCLK_NOT_DIV 0U << 2U // HCLK not divided
             #define HCLK_BY_2    0b100U   // HCLK divided by 2
             #define HCLK_BY_4    0b101U   // HCLK divided by 4
             #define HCLK_BY_8    0b110U   // HCLK divided by 8
             #define HCLK_BY_16   0b111U   // HCLK divided by 16
-        //------------------------------------------------------
+        //------------------------------------------------------------
 
         #define HPRE 4U // HCLK prescalar
         //------------------------------------------------------------
@@ -183,7 +113,7 @@
     
     // RCC_CFGR2 bits:
         #define PREDIV 0U // PREDIV division factor
-        //---------------------------------------------------------------
+        //-------------------------------------------------------------------------
             #define PREDIV_NOT_DIV     0b0000U // PREDIV input clock not divided
             #define PREDIV_BY_2        0b0001U // PREDIV input clock divided by 2
             #define PREDIV_BY_3        0b0010U // PREDIV input clock divided by 3
@@ -200,7 +130,7 @@
             #define PREDIV_BY_14       0b1101U // PREDIV input clock divided by 14
             #define PREDIV_BY_15       0b1110U // PREDIV input clock divided by 15
             #define PREDIV_BY_16       0b1111U // PREDIV input clock divided by 16
-        //---------------------------------------------------------------
+        //-------------------------------------------------------------------------
 
 //----------------
 // GPIO Registers
@@ -229,3 +159,6 @@
         #define PULL_UP                 0b01U
         #define PULL_DOWN               0b10U
         #define RESERVED                0b11U 
+     
+
+
