@@ -233,8 +233,55 @@ void end(int winner) {
             tick++;
         }
     }
-    
+}
 
+void start_count() {
+    struct Seg7Display counter = 
+    {
+        .number = 5
+    };
+
+    int tick = 1;
+    uint32_t saturation1 = 0U;
+    uint32_t saturation2 = 0U;
+
+    while(1) {
+        if(tick % 300000 == 0) {
+            (counter.number)--;
+            if (counter.number == 0) break;
+        }
+        
+        bool active1 = *GPIOC_IDR & (1U << 4U);
+        bool active2 = *GPIOC_IDR & (1U << 5U);
+
+        if (active1) {
+            if (saturation1 < 5U) {
+                saturation1 += 1U;
+            }
+            else {
+                end(P2);
+            }
+        }
+        else {
+            saturation1 = 0U;
+        }
+
+        if (active2) {
+            if (saturation2 < 5U) {
+                saturation2 += 1U;
+            }
+            else {
+                end(P1);
+            }
+        } 
+        else {
+            saturation2 = 0U;
+        }
+        
+        SEG7_set_number_pos(&counter, 1);
+        SEG7_push_display_state_to_mc(&counter);
+        tick++;
+    }
 }
     
 
@@ -243,18 +290,18 @@ void end(int winner) {
 //------
     int main()
     {
-        board_clocking_init();
+        //int wins_1 = 0;
+        //int wins_2 = 0;
 
+        board_clocking_init();
         board_gpio_init();
 
         // Init display rendering:
-        struct Seg7Display p1 =
-        {
+        struct Seg7Display p1 = {
             .number = 0
         };
 
-        struct Seg7Display p2 =
-        {
+        struct Seg7Display p2 = {
             .number = 0
         };
 
@@ -263,19 +310,18 @@ void end(int winner) {
 
         int ownership = NO_ONE; 
 
+        start_count();
+
         while (1)
         {
             bool active1 = *GPIOC_IDR & (1U << 4U);
             bool active2 = *GPIOC_IDR & (1U << 5U);
 
-            if (active1)
-            {
-                if (saturation1 < 5U)
-                {
+            if (active1) {
+                if (saturation1 < 5U) {
                     saturation1 += 1U;
                 }
-                else
-                {
+                else {
                     p1.number = 1;
                     if(ownership == P2) {
                         end(P2);
@@ -283,20 +329,16 @@ void end(int winner) {
                     else ownership = P1;
                 }
             }
-            else
-            {
+            else {
                 saturation1 = 0U;
                 ownership = NO_ONE;
             }
 
-            if (active2)
-            {
-                if (saturation2 < 5U)
-                {
+            if (active2) {
+                if (saturation2 < 5U) {
                     saturation2 += 1U;
                 }
-                else
-                {
+                else {
                     p2.number = 1;
                     if(ownership == P1) {
                         end(P1);
@@ -304,8 +346,7 @@ void end(int winner) {
                     else ownership = P2;
                 }
             }
-            else
-            {
+            else {
                 saturation2 = 0U;
                 ownership = NO_ONE;
             }
